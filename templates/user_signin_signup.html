@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>F1 DB</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.1/socket.io.js"></script>
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .hyper{
+            text-align:center;
+            padding:15px;
+            background-color:#E22420;
+            width:40px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            color:#ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        a{
+            margin:1.5%;
+            text-decoration:none;
+            color:white;
+        }
+        .container {
+            width: 450px;
+            height: 400px;
+            padding: 10%;
+            background-color: #E22420;
+            border-radius: 8px;
+            box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-btns {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tab-btns button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #ffffff;
+            color: #E22420;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .tab-btns button.active {
+            background-color: #fcc;
+        }
+
+        .tab-btns button:hover {
+            background-color: #faa;
+        }
+
+        .signin-container,
+        .signup-container {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            padding-right: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #fcc;
+            border-radius: 4px;
+        }
+
+        .form-group button {
+            color: #E22420;
+            background-color: #ffffff;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+        }
+        .form-group button:hover {
+            background-color: #faa;
+        }
+        .flex-con{
+            display:flex;
+            flex-direction:row;
+            justify-content:space-evenly;
+            align-items:center;
+            align-content:center;
+            gap:2.5%;
+            padding:5%;
+            margin-right:10%;
+        }
+        .tab{
+            display:flex;
+            flex-direction:column;
+            justify-content:space-evenly;
+            align-items:center;
+            align-content:center;		
+            margin-right:10%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React; 
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('signin');
+
+            const switchTab = (tabName) => {
+                setActiveTab(tabName);
+            };
+          
+            useEffect(() => {
+                const element1 = document.getElementById('signinForm')
+                if (element1){
+                    element1.addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        const username = document.getElementById('username1').value;
+                        localStorage.setItem('username', username);
+                        localStorage.setItem('password', document.getElementById('password1').value);
+                        this.submit();
+                    });
+                }
+            }, []);
+
+            useEffect(() => {
+                const element1 = document.getElementById('signupForm')
+                if (element1){
+                    element1.addEventListener('submit', function(event) {
+                        event.preventDefault();
+                        const username = document.getElementById('username2').value;
+                        localStorage.setItem('username', username);
+                        localStorage.setItem('password', document.getElementById('password1').value);
+                        this.submit();
+                    });
+                }
+            }, []);
+
+            return (
+            <div>
+            <div class="hyper">
+                <a href="./">Back</a>
+            </div>
+            <div class="flex-con">
+                <div class="tab">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/F1_%28registered_trademark%29.svg/1024px-F1_%28registered_trademark%29.svg.png" alt="Placeholder Image" />
+                </div>
+            <div>
+            <div class="container">
+                <div class="tab-btns">
+                    <button className={activeTab === 'signin' ? 'active' : ''} onClick={() => switchTab('signin')}>Sign In</button>
+                    <button className={activeTab === 'signup' ? 'active' : ''} onClick={() => switchTab('signup')}>Sign Up</button>
+                </div>
+
+                {activeTab === 'signin' ? (
+                    <div className="tab-content" id="signinTab">
+                        <h2>Sign In</h2>
+                        <form id="signinForm" action="/user_sign_in" method="POST">
+                            <div class="form-group">
+                                <label for="username1">Username:</label>
+                                <input type="text" id="username1" name="username" placeholder="Enter your username" />
+                            </div>
+                            <div class="form-group">
+                                <label for="password1">Password:</label>
+                                <input type="password" id="password1" name="password" placeholder="Enter your password" />
+                            </div>
+                            <div class="form-group">
+                                <button type="submit">Sign In</button>
+                            </div>
+                        </form>
+                    </div>
+                ) : null}
+
+                {activeTab === 'signup' ? (
+                    <div className="tab-content" id="signupTab">
+                        <h2>Sign Up</h2>
+                        <form id="signupForm" action="/user_sign_up" method="POST">
+                            <div class="form-group">
+                                <label for="username2">Username:</label>
+                                <input type="text" id="username2" name="username" placeholder="Enter your username" />
+                            </div>
+                            <div class="form-group">
+                                <label for="password2">Password:</label>
+                                <input type="password" id="password2" name="password" placeholder="Enter your password" />
+                            </div>
+                            <div class="form-group">
+                                <button type="submit">Sign Up</button>
+                            </div>
+                        </form>
+                    </div>
+                ) : null}
+            </div>
+            </div>
+            </div>
+            </div>
+        );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+    
+</body>
+
+</html>

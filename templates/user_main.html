@@ -1,0 +1,234 @@
+<html>
+    <head>
+        <title>F1 DB</title>
+        <style>
+            .hyper {
+                padding: 15px;
+                background-color: #E22420;
+            }
+            a {
+                margin: 1.5%;
+                text-decoration: none;
+                color: white;
+            }
+            .flex-con {
+                display: flex;
+                flex-direction: row;
+                justify-content: left;
+                align-items: stretch;
+                align-content: stretch;
+                gap: 2.5%;
+            }
+            .tab {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly;
+                align-items: stretch;
+                align-content: stretch;
+                width: 15%;
+            }
+            .tab1 {
+                display: flex;
+                flex-direction: column;
+                justify-content: stretch;
+                align-items: stretch;
+                align-content: stretch;
+                width: 70%;
+                gap: 2.5%;
+                margin-top: 2%;
+            }
+            button {
+                font-size: 18px;
+                background-color: #E22420;
+                color: white;
+                padding: 5%;
+                padding-left: 10%;
+                padding-right: 10%;
+                width: 100%;
+            }
+            .out {
+                margin-left: 80%;
+            }
+            .tables-container {
+                display: flex;
+                justify-content: space-around;
+            }
+            table {
+                border-collapse: collapse;
+                width: 45%;
+            }
+            th, td {
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+            }
+            th {
+                background-color: #fcc;
+            }
+            caption{
+                font-size: 25px;
+                font-weight: bold;
+            }
+            .tables-container {
+                display: flex;
+                justify-content: space-around;
+            }
+            table {
+                border-collapse: collapse;
+                width: 45%;
+            }
+            th, td {
+                padding: 8px;
+                text-align: left;
+                border: 1px solid #ddd;
+            }
+            th {
+                background-color: #fcc;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="hyper">
+            <a href="./user_main">Home</a>
+            <a class="out" href="./">Sign out</a>
+        </div>
+        <div class="flex-con">
+            <div class="tab">
+                <div>
+                    <button onclick="navigateTo('/view/country')">Country</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/constructor')">Constructor</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/circuit')">Circuit</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/driver')">Driver</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/season_constructor_driver')">Season Constructor Driver</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/race')">Race</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/race_results')">Race Results</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/quali_results')">Quali Results</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/driver_of_the_day_results')">Driver of the Day Results</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/free_practice_results')">Free Practice Results</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/pit_stops')">Pit Stops</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/sprint_quali_results')">Sprint Quali Results</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/view/sprint_race_results')">Sprint Race Results</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/get_driver_names')">Achievements</button>
+                </div>
+                <div>
+                    <button onclick="navigateTo('/get_driver')">Stats</button>
+                </div>
+            </div>
+            <div class="tab1">
+                <form method="POST" id="year-form">
+                    <label for="year">Select Year:</label>
+                    <select name="year" id="year" onchange="fetchChampionshipPoints(this.value);">
+                        <option value="" disabled selected>Select Year</option>
+                        {% for year in available_years %}
+                            <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <div class="tables-container">
+                    <table id="constructor-championship">
+                        <caption>Constructor Championship</caption>
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Constructor ID</th>
+                                <th>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <!-- Driver Championship Table -->
+                    <table id="driver-championship">
+                        <caption>Driver Championship</caption>
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Driver ID</th>
+                                <th>Constructor ID</th>
+                                <th>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <script>
+            function navigateTo(url) {
+                window.location.href = url;
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const selectedYear = document.getElementById('year').value;
+                if (selectedYear) {
+                fetchChampionshipPoints(selectedYear);
+                }
+            });
+            function fetchChampionshipPoints(year) {
+                fetch('/championship_points/' + year)
+                    .then(response => response.json())
+                    .then(data => {
+                        populateConstructorChampionship(data.constructor_standings);
+                        populateDriverChampionship(data.driver_standings);
+                    });
+            }
+
+            function populateConstructorChampionship(standings) {
+                const constructorChampionshipTable = document.getElementById('constructor-championship').getElementsByTagName('tbody')[0];
+                constructorChampionshipTable.innerHTML = '';
+                standings.forEach(constructor => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${constructor[0]}</td>
+                        <td>${constructor[1]}</td>
+                        <td>${constructor[2]}</td>
+                    `;
+                    constructorChampionshipTable.appendChild(row);
+                });
+            }
+
+            function populateDriverChampionship(standings) {
+                const driverChampionshipTable = document.getElementById('driver-championship').getElementsByTagName('tbody')[0];
+                driverChampionshipTable.innerHTML = '';
+                standings.forEach(driver => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${driver[0]}</td>
+                        <td>${driver[1]}</td>
+                        <td>${driver[2]}</td>
+                        <td>${driver[3]}</td>
+                    `;
+                    driverChampionshipTable.appendChild(row);
+                });
+            }
+        </script>
+    </body>
+</html>

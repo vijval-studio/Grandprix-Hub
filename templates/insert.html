@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insert Data</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-container {
+            background-color: #fcc;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .alert {
+            display: none;
+            margin-top: 1rem;
+        }
+        .btn-primary {
+            background-color: #E22420;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #E22420;
+            color: white;
+        }
+        .hyper {
+            padding: 15px;
+            background-color: #E22420;
+        }
+        a {
+            margin: 1.5%;
+            text-decoration: none;
+            color: white;
+        }
+        .out {
+            margin-left: 70%;
+        }
+    </style>
+</head>
+<body>
+    <div class="hyper">
+        <a href="./maintainer_main">Home</a>
+        <a href='/view_table/{{ table_name }}'>View Table</a>
+        <a class="out" href="./">Sign out</a>
+    </div>
+    <div class="container">
+        <div class="form-container">
+            <h2 class="mb-4">Insert Data into {{ table_name }}</h2>
+            
+            <!-- Success/Error Messages -->
+            <div id="successAlert" class="alert alert-success" role="alert">
+            </div>
+            <div id="errorAlert" class="alert alert-danger" role="alert">
+            </div>
+
+            <form id="insertForm" action="{{ url_for('insert') }}" method="POST">
+                <input type="hidden" name="table_name" value="{{ table_name }}">
+                
+                {% for column_name in column_names %}
+                <div class="mb-3">
+                    <label for="{{ column_name }}" class="form-label">{{ column_name }}</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="{{ column_name }}" 
+                           data-column="{{ column_name }}"
+                           placeholder="Enter {{ column_name }}">
+                </div>
+                {% endfor %}
+
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">Insert Data</button>
+                    <a href="/select_insert" class="btn btn-secondary">Back to Tables</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('insertForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('table_name', '{{ table_name }}');
+            
+            // Get all input fields
+            const inputs = document.querySelectorAll('input[data-column]');
+            let columnNames = [];
+            let values = [];
+            
+            // Only collect non-empty inputs
+            inputs.forEach(input => {
+                if (input.value.trim()) {
+                    columnNames.push(input.dataset.column);
+                    values.push(input.value.trim());
+                }
+            });
+            
+            // Add the non-empty values to formData
+            formData.append('column_names', columnNames.join(','));
+            formData.append('values', values.join(','));
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const successAlert = document.getElementById('successAlert');
+                const errorAlert = document.getElementById('errorAlert');
+                
+                if (data.success) {
+                    successAlert.style.display = 'block';
+                    errorAlert.style.display = 'none';
+                    successAlert.textContent = data.message;
+                    this.reset();
+                } else {
+                    errorAlert.style.display = 'block';
+                    successAlert.style.display = 'none';
+                    errorAlert.textContent = data.message;
+                }
+                
+                // Hide alerts after 3 seconds
+                setTimeout(() => {
+                    successAlert.style.display = 'none';
+                    errorAlert.style.display = 'none';
+                }, 3000);
+            })
+            .catch(error => {
+                document.getElementById('errorAlert').style.display = 'block';
+                document.getElementById('errorAlert').textContent = 'An error occurred while processing your request.';
+            });
+        });
+    </script>
+</body>
+</html>
